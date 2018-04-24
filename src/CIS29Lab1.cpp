@@ -93,6 +93,7 @@ public:
  * MorseBinaryCharTable Implementation
  */
 MorseBinaryCharTable::MorseBinaryCharTable() {
+	// Size of 128 to potentially hold ascii codes up to 128
 	charIntToBinaryStringTable.resize(128);
 	try {
 		charIntToBinaryStringTable[(int) 'A'] = ".-";
@@ -150,7 +151,11 @@ MorseBinaryCharTable::MorseBinaryCharTable() {
 void MorseBinaryCharTable::buildBinaryIntToCharTable() {
 	unsigned int i, j, n, n1;
 	string bitString;
-	binaryIntToCharTable.resize(16384); // 2^14 since $ is the longest at 14 bits
+	/* 2^14 since $ has the longest binary representation at 14 bits
+	 * There is a lot of wasted spaces since we don't even have 2^14
+	 * values to store, but we want faster lookup performance compared to smaller memory usage.
+	 * Hashing would use less space, at the expense of a few CPU calculations */
+	binaryIntToCharTable.resize(16384);
 	// build a binary int to char map
 	n = charIntToBinaryStringTable.size();
 	for (i = 0; i < n; i++) {
