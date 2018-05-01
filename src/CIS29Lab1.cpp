@@ -10,6 +10,7 @@
 #include <iostream>     // std::cout
 #include <vector>       // std::vector
 #include <bitset>
+#include <utility>      // std::pair, std::make_pair
 using namespace std;
 
 /**
@@ -26,8 +27,9 @@ public:
 	 * the reason we do not return the string of the entire ASCII file
 	 * is because we want to stream and not waste memory
 	 @pre None
-	 @post None
+	 @post fileStream opened
 	 @param string File name to open
+	 @param fileStream input file stream
 	 @return True on file open successful and false in not
 	 */
 	bool readLines(string fileName, ifstream& fileStream);
@@ -36,8 +38,26 @@ public:
 };
 
 /**
+ @class HashTable
+ A simple hash table \n
+ */
+template<class T>
+class HashTable {
+private:
+	vector<pair<int, T>> table;
+public:
+	HashTable();
+	HashTable(int size);
+	~HashTable() {
+	}
+	bool insert(int key, T val);
+	T at(int key);
+	int hash(int key);
+};
+
+/**
  @class MorseBinaryCharTable
- It converts hexadecimals to chars \n
+ Maps morse binary code to a character \n
  */
 class MorseBinaryCharTable {
 private:
@@ -55,7 +75,7 @@ public:
 
 /**
  @class MorseBinary
- Utilities for pairs of degree angles \n
+ Converts the integer representation of morse binary code to a character \n
  */
 class MorseBinary {
 private:
@@ -90,10 +110,47 @@ public:
 };
 
 /*
+ * HashTable Implementation
+ */
+template<class T>
+HashTable<T>::HashTable() {
+	table.resize(100);
+}
+template<class T>
+HashTable<T>::HashTable(int size) {
+	table.resize(size);
+}
+template<class T>
+bool HashTable<T>::insert(int key, T val) {
+	int attempts = 3;
+	int keyOriginal = key;
+	bool flag = false;
+	for (; attempts > 0; attempts--) {
+		key = hash(key);
+		if (!table[key]) {
+			table[key].first = keyOriginal;
+			table[key].second = val;
+			break;
+		}
+	}
+	return flag;
+}
+template<class T>
+T HashTable<T>::at(int key) {
+// did not finish implementation
+}
+template<class T>
+int HashTable<T>::hash(int key) {
+	return (key * 2654435761) % table.size();
+}
+/*
  * MorseBinaryCharTable Implementation
  */
 MorseBinaryCharTable::MorseBinaryCharTable() {
-	// Size of 128 to potentially hold ascii codes up to 128
+	/* Size of 128 to potentially hold ascii codes up to 128
+	 * We are going to invert this array with
+	 * buildBinaryIntToCharTable()
+	 */
 	charIntToBinaryStringTable.resize(128);
 	try {
 		charIntToBinaryStringTable[(int) 'A'] = ".-";
@@ -156,7 +213,7 @@ void MorseBinaryCharTable::buildBinaryIntToCharTable() {
 	 * values to store, but we want faster lookup performance compared to smaller memory usage.
 	 * Hashing would use less space, at the expense of a few CPU calculations */
 	binaryIntToCharTable.resize(16384);
-	// build a binary int to char map
+// build a binary int to char map
 	n = charIntToBinaryStringTable.size();
 	for (i = 0; i < n; i++) {
 		bitString = "";
@@ -182,7 +239,7 @@ void MorseBinaryCharTable::buildBinaryIntToCharTable() {
 
 bool MorseBinaryCharTable::binaryIntToChar(unsigned int binaryInt,
 		char& charOut) {
-	//cout << "binaryInt=" << binaryInt << endl;
+//cout << "binaryInt=" << binaryInt << endl;
 	try {
 		charOut = binaryIntToCharTable[binaryInt];
 		return true;
@@ -283,9 +340,9 @@ bool Parser::bufferHandle() {
 	bool flag = false;
 	int letterSpaceNext = bitStringFind("00");
 	int wordSpaceNext = bitStringFind("11");
-	//cout << letterSpaceNext << " " << wordSpaceNext << endl;
+//cout << letterSpaceNext << " " << wordSpaceNext << endl;
 	unsigned int morseEndPos;
-	// find letter and word spaces
+// find letter and word spaces
 	if (letterSpaceNext != -1 || wordSpaceNext != -1) {
 		if ((letterSpaceNext != -1 && wordSpaceNext == -1)
 				|| (letterSpaceNext != -1 && wordSpaceNext != -1
