@@ -137,7 +137,18 @@ bool HashTable<T>::insert(int key, T val) {
 }
 template<class T>
 T HashTable<T>::at(int key) {
-// did not finish implementation
+	int attempts = 3;
+	int keyOriginal = key;
+	T ret;
+	for (; attempts > 0; attempts--) {
+		key = hash(key);
+		if (table[key] && table[key].first == keyOriginal) {
+			table[key].first = keyOriginal;
+			ret = table[key].second;
+			break;
+		}
+	}
+	return ret;
 }
 template<class T>
 int HashTable<T>::hash(int key) {
